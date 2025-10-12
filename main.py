@@ -14,7 +14,20 @@ face_vectors = []
 face_names = []
 
 def saveEncoded(name, timestamp, encoded):
-    np.save(f"face_vectors/{name}_{timestamp}.npy", encoded)
+
+    files = os.listdir(f'face_vectors/{name}')
+    if len(files) > data_keep_per_person:
+        image_times = []
+        for file in files:
+            image_times.append(os.path.splitext(file)[0].split('_')[1])
+
+        min_time = min(image_times)
+        os.remove(f"face_vectors/{name}/{name}_{min_time}.npy")
+
+        face_names.remove(f"{name}_{min_time}")
+        face_vectors.remove(encoded)
+
+    np.save(f"face_vectors/{name}/{name}_{timestamp}.npy", encoded)
     face_names.append(f"{name}_{timestamp}")
     face_vectors.append(encoded)
 
@@ -47,12 +60,14 @@ for face in input_face:
     encoded = face_recognition.face_encodings(image)[0]
 
     # create encoded face file
-    np.save(f"face_vectors/{name}_0000000000.npy", encoded)
+    np.save(f"face_vectors/{name}/{name}_0000000000.npy", encoded)
 
 # load face_vectors
-for file in os.listdir('face_vectors'):
-    face_vectors.append(np.load(f"face_vectors/{file}"))
-    face_names.append(os.path.splitext(file)[0])
+for directory in os.listdir('face_vectors'):
+    if os.path.isdir(f"face_vectors/{directory}"):
+        for file in os.listdir(f"face_vectors/{directory}"):
+            face_vectors.append(np.load(f"face_vectors/{directory}/{file}"))
+            face_names.append(os.path.splitext(file)[0])
 
 mark_attendance_map = {}
 save_encoded_map = {}
