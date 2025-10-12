@@ -5,8 +5,10 @@ import numpy as np
 import face_recognition
 import cv2
 
+face_judgement_threshold = 0.5
 mark_attendance_delay = 5
 save_encoded_delay = 10
+data_keep_per_person = 20
 
 face_vectors = []
 face_names = []
@@ -78,26 +80,29 @@ while True:
 
         min_face_distance_index = np.argmin(face_distances)
 
-        if matches[min_face_distance_index]:
-            name = face_names[min_face_distance_index].split("_")[0].upper()
+        # check threshold value
+        if min_face_distance_index >= face_judgement_threshold:
 
-            # check if this person is out of frame over delay second
-            if name not in mark_attendance_map:
-                markAttendance(name, int(time.time()))
+            if matches[min_face_distance_index]:
+                name = face_names[min_face_distance_index].split("_")[0].upper()
 
-            if name not in save_encoded_map:
-                saveEncoded(name, int(time.time()), encoded_face)
+                # check if this person is out of frame over delay second
+                if name not in mark_attendance_map:
+                    markAttendance(name, int(time.time()))
 
-            mark_attendance_map[name] = int(time.time())
-            save_encoded_map[name] = int(time.time())
+                if name not in save_encoded_map:
+                    saveEncoded(name, int(time.time()), encoded_face)
 
-            # print(faceLoc)(top, right, bottom, left)
-            y1, x2, y2, x1 = location
-            y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4  # rescale พิกัดกลับมาไซส์เดิม
-            cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0),
-                          3)  # cv2.rectangle(image, pt1บนซ้าย, pt2ล่างขวา, color, thickness)
-            cv2.rectangle(img, (x1, y2 - 35), (x2, y2), (0, 255, 0), cv2.FILLED)
-            cv2.putText(img, name, (x1 + 6, y2 - 6), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (255, 255, 255), 2)
+                mark_attendance_map[name] = int(time.time())
+                save_encoded_map[name] = int(time.time())
+
+                # print(faceLoc)(top, right, bottom, left)
+                y1, x2, y2, x1 = location
+                y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4  # rescale พิกัดกลับมาไซส์เดิม
+                cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0),
+                              3)  # cv2.rectangle(image, pt1บนซ้าย, pt2ล่างขวา, color, thickness)
+                cv2.rectangle(img, (x1, y2 - 35), (x2, y2), (0, 255, 0), cv2.FILLED)
+                cv2.putText(img, name, (x1 + 6, y2 - 6), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (255, 255, 255), 2)
 
     cv2.imshow('Webcam', img)
     cv2.waitKey(1)
