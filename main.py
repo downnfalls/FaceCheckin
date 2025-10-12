@@ -27,7 +27,9 @@ def saveEncoded(name, timestamp, encoded):
         face_names.remove(f"{name}_{min_time}")
         face_vectors.remove(encoded)
 
-    np.save(f"face_vectors/{name}/{name}_{timestamp}.npy", encoded)
+    folder = f"face_vectors/{name}"
+    os.makedirs(folder, exist_ok=True)
+    np.save(f"{folder}/{name}_{timestamp}.npy", encoded)
     face_names.append(f"{name}_{timestamp}")
     face_vectors.append(encoded)
 
@@ -60,7 +62,10 @@ for face in input_face:
     encoded = face_recognition.face_encodings(image)[0]
 
     # create encoded face file
-    np.save(f"face_vectors/{name}/{name}_0000000000.npy", encoded)
+    folder = f"face_vectors/{name}"
+    os.makedirs(folder, exist_ok=True)
+
+    np.save(f"{folder}/{name}_0000000000.npy", encoded)
 
 # load face_vectors
 for directory in os.listdir('face_vectors'):
