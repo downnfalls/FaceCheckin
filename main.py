@@ -1,4 +1,6 @@
+import tkinter as tk
 import os
+
 
 import time
 import numpy as np
@@ -34,6 +36,12 @@ def saveEncoded(name, timestamp, encoded):
     face_vectors.append(encoded)
 
 def markAttendance(name, timestamp):
+
+    filepath = 'attendances.csv' # ถ้ายังไม่มีชื่อใน attendance = write new one ( name, time )
+    if not os.path.exists(filepath):
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.writelines("Name, Time\n")
+
     with open('attendances.csv', 'r+', encoding='utf-8') as f:
         my_data_list = f.readlines()
         name_list = []
@@ -101,7 +109,7 @@ while True:
         min_face_distance_index = np.argmin(face_distances)
 
         # check threshold value
-        if min_face_distance_index >= face_judgement_threshold:
+        if face_distances[min_face_distance_index] <= face_judgement_threshold:
 
             if matches[min_face_distance_index]:
                 name = face_names[min_face_distance_index].split("_")[0].upper()
@@ -128,3 +136,6 @@ while True:
     cv2.waitKey(1)
     if cv2.waitKey(1) & 0xFF == ord('q'):  # press q to cancel
         break
+
+
+# create GUI window to choose sign up or sign in
