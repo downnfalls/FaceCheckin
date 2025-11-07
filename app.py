@@ -1,8 +1,7 @@
 import tkinter as tk
-from tkinter import messagebox
 import os
 import sys
-
+import subprocess
 
 # --- ฟังก์ชันควบคุม (Handlers) ---
 
@@ -11,6 +10,28 @@ def handle_sign_up():
     ฟังก์ชันสำหรับเปิดหน้าต่างหรือเริ่มกระบวนการลงทะเบียนใบหน้าใหม่
     """
     print("--- ลงทะเบียนใบหน้าถูกเลือก ---")
+
+    # 1. ปิดหน้าต่าง GUI ปัจจุบัน
+    try:
+        root.destroy()
+    except tk.TclError:
+        # อาจเกิดข้อผิดพลาดหากหน้าต่างถูกปิดไปแล้ว
+        pass
+
+    # 2. เรียกใช้สคริปต์ GUI ใหม่ (register.py)
+    try:
+        # ตรวจสอบระบบปฏิบัติการเพื่อเลือกคำสั่ง python ที่ถูกต้อง
+        command = [sys.executable, "register.py"]
+
+        print(f"กำลังรันคำสั่ง: {' '.join(command)}")
+
+        # ใช้ subprocess แทน os.system เพื่อให้ GUI ใหม่เปิดเต็มรูปแบบ
+        subprocess.run(command, check=True)
+
+    except Exception as e:
+        print(f"เกิดข้อผิดพลาดในการรัน register.py: {e}")
+        # ในแอปจริง ควรแสดงข้อผิดพลาดนี้ใน GUI
+        # messagebox.showerror("Error", f"Failed to run main.py: {e}")
 
 
     # messagebox.showinfo(
@@ -37,11 +58,13 @@ def handle_sign_in():
 
     # 2. เรียกใช้สคริปต์ main.py
     try:
-        # ตรวจสอบระบบปฏิบัติการเพื่อใช้คำสั่ง python ที่ถูกต้อง
-        command = 'python3 main.py' if sys.platform != 'win32' else 'python main.py'
+        # ใช้ interpreter เดียวกับที่รันสคริปต์นี้อยู่
+        command = [sys.executable, "main.py"]
 
-        print(f"กำลังรันคำสั่ง: {command}")
-        os.system(command)
+        print(f"กำลังรันคำสั่ง: {' '.join(command)}")
+
+        # ใช้ subprocess เพื่อรัน GUI ใหม่อย่างถูกต้อง
+        subprocess.run(command, check=True)
 
     except Exception as e:
         print(f"เกิดข้อผิดพลาดในการรัน main.py: {e}")
@@ -110,7 +133,7 @@ button_frame.pack(fill='x', expand=True)
 # ปุ่ม Sign Up (ลงทะเบียน)
 REGISTER_button = tk.Button(
     button_frame,
-    text="ลงทะเบียนใบหน้า (Sign Up)",
+    text="ลงทะเบียนใบหน้า (Register)",
     command=handle_sign_up,
     font=FONT_BUTTON,
     bg=BTN_REGISTER_BG,
