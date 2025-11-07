@@ -1,7 +1,8 @@
 import tkinter as tk
+from tkinter import messagebox
 import os
 import sys
-import subprocess
+
 
 # --- ฟังก์ชันควบคุม (Handlers) ---
 
@@ -10,66 +11,44 @@ def handle_sign_up():
     ฟังก์ชันสำหรับเปิดหน้าต่างหรือเริ่มกระบวนการลงทะเบียนใบหน้าใหม่
     """
     print("--- ลงทะเบียนใบหน้าถูกเลือก ---")
-
-    # 1. ปิดหน้าต่าง GUI ปัจจุบัน
+    
+    # ซ่อนหน้าต่างหลัก
+    root.withdraw()
+    
+    # รันสคริปต์ register.py
     try:
-        root.destroy()
-    except tk.TclError:
-        # อาจเกิดข้อผิดพลาดหากหน้าต่างถูกปิดไปแล้ว
-        pass
-
-    # 2. เรียกใช้สคริปต์ GUI ใหม่ (register.py)
-    try:
-        # ตรวจสอบระบบปฏิบัติการเพื่อเลือกคำสั่ง python ที่ถูกต้อง
-        command = [sys.executable, "register.py"]
-
-        print(f"กำลังรันคำสั่ง: {' '.join(command)}")
-
-        # ใช้ subprocess แทน os.system เพื่อให้ GUI ใหม่เปิดเต็มรูปแบบ
-        subprocess.run(command, check=True)
-
+        command = 'python3.10 register.py' if sys.platform != 'win32' else 'py -3.10 register.py'
+        os.system(command)
     except Exception as e:
         print(f"เกิดข้อผิดพลาดในการรัน register.py: {e}")
-        # ในแอปจริง ควรแสดงข้อผิดพลาดนี้ใน GUI
-        # messagebox.showerror("Error", f"Failed to run main.py: {e}")
+    
+    # แสดงหน้าต่างหลักอีกครั้ง
+    root.deiconify()
 
 
-    # messagebox.showinfo(
-    #     "ลงทะเบียน (Sign Up)",
-    #     "ฟังก์ชันลงทะเบียนยังไม่ถูกพัฒนา\n(Registration function is not yet implemented)"
-    # )
-    # หากต้องการเรียกสคริปต์อื่น:
-    # root.destroy()
-    # os.system("python registration_script.py")
-
-
-def handle_sign_in():
+def handle_sign_in(): # sign in ทำงานใน main.py
     """
-    ฟังก์ชันสำหรับปิดหน้าต่าง GUI และเรียกใช้สคริปต์หลัก (main.py)
+    ฟังก์ชันสำหรับซ่อนหน้าต่าง GUI และเรียกใช้สคริปต์หลัก (main.py)
     """
     print("--- เข้าสู่ระบบถูกเลือก ---")
 
-    # 1. ปิดหน้าต่าง Tkinter ก่อน
+    # ซ่อนหน้าต่างหลัก
+    root.withdraw()
+
+    # เรียกใช้สคริปต์ main.py
     try:
-        root.destroy()
-    except tk.TclError:
-        # อาจเกิดข้อผิดพลาดหากหน้าต่างถูกปิดไปแล้ว
-        pass
+        # ตรวจสอบระบบปฏิบัติการเพื่อใช้คำสั่ง python ที่ถูกต้อง
+        command = 'python3.10 main.py' if sys.platform != 'win32' else 'py -3.10 main.py'
 
-    # 2. เรียกใช้สคริปต์ main.py
-    try:
-        # ใช้ interpreter เดียวกับที่รันสคริปต์นี้อยู่
-        command = [sys.executable, "main.py"]
-
-        print(f"กำลังรันคำสั่ง: {' '.join(command)}")
-
-        # ใช้ subprocess เพื่อรัน GUI ใหม่อย่างถูกต้อง
-        subprocess.run(command, check=True)
+        print(f"กำลังรันคำสั่ง: {command}")
+        os.system(command)
 
     except Exception as e:
         print(f"เกิดข้อผิดพลาดในการรัน main.py: {e}")
-        # ในแอปจริง ควรแสดงข้อผิดพลาดนี้ใน GUI
-        # messagebox.showerror("Error", f"Failed to run main.py: {e}")
+        messagebox.showerror("Error", f"Failed to run main.py: {e}")
+
+    # แสดงหน้าต่างหลักอีกครั้ง
+    root.deiconify()
 
 
 # --- การตั้งค่า GUI หลัก ---
@@ -133,7 +112,7 @@ button_frame.pack(fill='x', expand=True)
 # ปุ่ม Sign Up (ลงทะเบียน)
 REGISTER_button = tk.Button(
     button_frame,
-    text="ลงทะเบียนใบหน้า (Register)",
+    text="ลงทะเบียนใบหน้า (Sign Up)",
     command=handle_sign_up,
     font=FONT_BUTTON,
     bg=BTN_REGISTER_BG,
@@ -145,7 +124,7 @@ REGISTER_button = tk.Button(
     relief="flat",  # *** เพิ่มบรรทัดนี้เพื่อบังคับ macOS ***
     padx=20,
     pady=10,
-    cursor="pointinghand"  # เปลี่ยน cursor เมื่อชี้
+    cursor="hand2"  # เปลี่ยน cursor เมื่อชี้
 )
 REGISTER_button.pack(pady=10, fill='x', expand=True)
 
@@ -164,9 +143,59 @@ signin_button = tk.Button(
     relief="flat",  # *** เพิ่มบรรทัดนี้เพื่อบังคับ macOS ***
     padx=20,
     pady=10,
-    cursor="pointinghand"
+    cursor="hand2"
 )
 signin_button.pack(pady=10, fill='x', expand=True)
+
+# ปุ่มดูข้อมูลเช็คชื่อ (Attendance)
+attendance_view = None
+try:
+    import attendance as attendance_view  # ชื่อไฟล์เดิม
+except Exception:
+    try:
+        import attendance as attendance_view  # เผื่อผู้ใช้ใช้ชื่อไฟล์นี้
+    except Exception:
+        attendance_view = None
+
+def handle_view_attendance():
+    if attendance_view is None:
+        messagebox.showerror("ข้อผิดพลาด", "ไม่พบโมดูล attendance.py")
+        return
+
+    # ซ่อนหน้าต่างหลัก
+    root.withdraw()
+    
+    try:
+        # เปิดหน้าต่างดูการเช็คชื่อ
+        attendance_window = attendance_view.open_attendance_window(root)
+        
+        # รอจนกว่าหน้าต่างจะถูกปิด
+        root.wait_window(attendance_window)
+        
+        # แสดงหน้าต่างหลักอีกครั้ง
+        root.deiconify()
+    except Exception as ex:
+        messagebox.showerror("ข้อผิดพลาด", f"ไม่สามารถเปิดหน้าต่างการเช็คชื่อได้\n{ex}")
+        # ในกรณีเกิดข้อผิดพลาด ก็ยังต้องแสดงหน้าต่างหลักอีกครั้ง
+        root.deiconify()
+
+attendance_button = tk.Button(
+    main_frame,
+    text="ดูการเช็คชื่อ (เลือกวัน)",
+    font=FONT_BUTTON,
+    bg=BTN_SIGNIN_BG,
+    fg=BTN_SIGNIN_FG,
+    activebackground=BTN_SIGNIN_ACTIVE_BG,
+    activeforeground=BTN_SIGNIN_ACTIVE_FG,
+    bd=0,
+    highlightthickness=0,
+    relief="flat",
+    padx=20,
+    pady=10,
+    cursor="hand2",
+    command=handle_view_attendance
+)
+attendance_button.pack(pady=10, fill='x', expand=True)
 
 # เริ่ม Tkinter main loop
 if __name__ == "__main__":
