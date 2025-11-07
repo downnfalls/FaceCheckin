@@ -1,16 +1,15 @@
-import tkinter as tk
 import os
-
 
 import time
 import numpy as np
 import face_recognition
 import cv2
+import shutil
 
 face_judgement_threshold = 0.5
 mark_attendance_delay = 5
 save_encoded_delay = 10
-data_keep_per_person = 20
+data_keep_per_person = 5
 
 face_vectors = []
 face_names = []
@@ -21,13 +20,15 @@ def saveEncoded(name, timestamp, encoded):
     if len(files) > data_keep_per_person:
         image_times = []
         for file in files:
-            image_times.append(os.path.splitext(file)[0].split('_')[1])
+            times = os.path.splitext(file)[0].split('_')[1]
+            image_times.append(times)
 
         min_time = min(image_times)
         os.remove(f"face_vectors/{name}/{name}_{min_time}.npy")
 
-        face_names.remove(f"{name}_{min_time}")
-        face_vectors.remove(encoded)
+        index = face_names.index(f"{name}_{min_time}")
+        face_names.pop(index)
+        face_vectors.pop(index)
 
     folder = f"face_vectors/{name}"
     os.makedirs(folder, exist_ok=True)
@@ -48,19 +49,20 @@ def markAttendance(name, timestamp):
         for line in my_data_list:
             entry = line.strip().split(',')  # strip() กัน \n
             name_list.append(entry[0])
-        if name not in name_list:
-            now = time.localtime(timestamp)
-            time_string = time.strftime("%d/%m/%Y %H:%M:%S", now)  # strftime representing date and time using date
-            f.writelines(f'\n{name}, {time_string}\n')
+        # if name not in name_list:
+        now = time.localtime(timestamp)
+        time_string = time.strftime("%d/%m/%Y %H:%M:%S", now)  # strftime representing date and time using date
+        f.writelines(f'{name}, {time_string}\n')
         print(my_data_list)
 
 input_face = []
 for file in os.listdir('face_input'):
     raw_image = cv2.imread(f'face_input/{file}')
 
-    converted_image = cv2.cvtColor(raw_image, cv2.COLOR_BGR2RGB)
-    input_face.append({"name": os.path.splitext(file)[0], "image": converted_image})
+    resized_frame = cv2.resize(raw_image, (0, 0), fx=0.25, fy=0.25)
+    converted_image = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2RGB)
 
+    input_face.append({"name": os.path.splitext(file)[0], "image": converted_image})
 
 # convert input image to face vector and keep it to face_vector dir
 for face in input_face:
@@ -72,8 +74,17 @@ for face in input_face:
     # create encoded face file
     folder = f"face_vectors/{name}"
     os.makedirs(folder, exist_ok=True)
+    np.save(f"{folder}/{name.upper()}_9999999999.npy", encoded)
 
-    np.save(f"{folder}/{name}_0000000000.npy", encoded)
+for file in os.listdir('face_input_vectors'):
+    if os.path.isfile(f'face_input_vectors/{file}'):
+
+        name = os.path.splitext(file)[0]
+
+        folder = f"face_vectors/{name}"
+        os.makedirs(f"{folder}", exist_ok=True)
+        shutil.copy(f"face_input_vectors/{name}.npy", f"{folder}/{name.upper()}_9999999999.npy")
+
 
 # load face_vectors
 for directory in os.listdir('face_vectors'):
@@ -87,13 +98,17 @@ save_encoded_map = {}
 webCam = cv2.VideoCapture(0)
 while True:
 
-    for key, value in mark_attendance_map.items():
-        if int(time.time()) - value > mark_attendance_delay:
-            mark_attendance_map.pop(key)
+    mark_attendance_map = {
+        key: value
+        for key, value in mark_attendance_map.items()
+        if int(time.time()) - value <= mark_attendance_delay
+    }
 
-    for key, value in save_encoded_map.items():
-        if int(time.time()) - value > save_encoded_delay:
-            save_encoded_map.pop(key)
+    save_encoded_map = {
+        key: value
+        for key, value in save_encoded_map.items()
+        if int(time.time()) - value <= save_encoded_delay
+    }
 
     success, img = webCam.read()
     resized_frame = cv2.resize(img, (0, 0), fx=0.25, fy=0.25)
