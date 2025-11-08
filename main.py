@@ -77,7 +77,7 @@ for face in input_face:
     encoded = face_recognition.face_encodings(image)[0]
 
     # create encoded face file
-    folder = f"face_vectors/{name}"
+    folder = f"face_vectors/{name.upper()}"
     os.makedirs(folder, exist_ok=True)
     np.save(f"{folder}/{name.upper()}_9999999999.npy", encoded)
 
@@ -86,7 +86,7 @@ for file in os.listdir('face_input_vectors'):
 
         name = os.path.splitext(file)[0]
 
-        folder = f"face_vectors/{name}"
+        folder = f"face_vectors/{name.upper()}"
         os.makedirs(f"{folder}", exist_ok=True)
         shutil.copy(f"face_input_vectors/{name}.npy", f"{folder}/{name.upper()}_9999999999.npy")
 
