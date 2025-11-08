@@ -6,11 +6,8 @@ import face_recognition
 import cv2
 import shutil
 
-import tkinter as tk
-from tkinter import messagebox
-
-face_judgement_threshold = 0.30
-mark_attendance_delay = 10 # seconds
+face_judgement_threshold = 0.3
+mark_attendance_delay = 5
 save_encoded_delay = 10
 data_keep_per_person = 5
 
@@ -57,8 +54,6 @@ def markAttendance(name, timestamp):
         time_string = time.strftime("%d/%m/%Y %H:%M:%S", now)  # strftime representing date and time using date
         f.writelines(f'{name}, {time_string}\n')
         print(my_data_list)
-
-    
 
 input_face = []
 for file in os.listdir('face_input'):
@@ -137,11 +132,6 @@ while True:
                 # check if this person is out of frame over delay second
                 if name not in mark_attendance_map:
                     markAttendance(name, int(time.time()))
-                    time.sleep(5)
-                    root = tk.Tk()
-                    root.withdraw()
-                    messagebox.showinfo("Check-In Complete", f"{name} checked in successfully.")
-                    root.destroy()
 
                 if name not in save_encoded_map:
                     saveEncoded(name, int(time.time()), encoded_face)
