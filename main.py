@@ -6,7 +6,7 @@ import face_recognition
 import cv2
 import shutil
 
-face_judgement_threshold = 0.5
+face_judgement_threshold = 0.3
 mark_attendance_delay = 5
 save_encoded_delay = 10
 data_keep_per_person = 5
